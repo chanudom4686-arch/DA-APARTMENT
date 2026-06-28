@@ -311,11 +311,11 @@ export default function Dormitories() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>หน่วยค่าไฟฟ้า (บาท/หน่วย)</label>
-                  <input type="number" value={formData.elec_rate} onChange={e => setFormData({...formData, elec_rate: Number(e.target.value)})} className="input-field" step="0.01" />
+                  <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={formData.elec_rate} onChange={e => setFormData({...formData, elec_rate: Number(e.target.value)})} className="input-field" step="0.01" />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>หน่วยค่าน้ำประปา (บาท/หน่วย)</label>
-                  <input type="number" value={formData.water_rate} onChange={e => setFormData({...formData, water_rate: Number(e.target.value)})} className="input-field" step="0.01" />
+                  <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={formData.water_rate} onChange={e => setFormData({...formData, water_rate: Number(e.target.value)})} className="input-field" step="0.01" />
                 </div>
               </div>
 

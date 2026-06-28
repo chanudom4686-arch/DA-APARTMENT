@@ -606,7 +606,7 @@ export default function Reports() {
               </div>
               <div>
                 <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>จำนวนเงิน (บาท)</label>
-                <input type="number" required min="0" value={expenseForm.amount || ''} onChange={e => setExpenseForm({...expenseForm, amount: Number(e.target.value)})} className="input-field" />
+                <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} required min="0" value={expenseForm.amount || ''} onChange={e => setExpenseForm({...expenseForm, amount: Number(e.target.value)})} className="input-field" />
               </div>
               <div>
                 <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>หมายเหตุ (ตัวเลือก)</label>

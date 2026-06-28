@@ -327,11 +327,11 @@ export default function BillingHistory() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
                   <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>ไฟฟ้าครั้งก่อน</label>
-                  <input type="number" value={editInvoice.prev_elec} onChange={e => setEditInvoice({...editInvoice, prev_elec: e.target.value})} className="input-field" />
+                  <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={editInvoice.prev_elec} onChange={e => setEditInvoice({...editInvoice, prev_elec: e.target.value})} className="input-field" />
                 </div>
                 <div>
                   <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>ไฟฟ้าครั้งนี้</label>
-                  <input type="number" value={editInvoice.current_elec} onChange={e => setEditInvoice({...editInvoice, current_elec: e.target.value})} className="input-field" />
+                  <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={editInvoice.current_elec} onChange={e => setEditInvoice({...editInvoice, current_elec: e.target.value})} className="input-field" />
                 </div>
               </div>
               
@@ -339,11 +339,11 @@ export default function BillingHistory() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                   <div>
                     <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>ไฟฟ้า B ครั้งก่อน</label>
-                    <input type="number" value={editInvoice.prev_elec_b} onChange={e => setEditInvoice({...editInvoice, prev_elec_b: e.target.value})} className="input-field" />
+                    <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={editInvoice.prev_elec_b} onChange={e => setEditInvoice({...editInvoice, prev_elec_b: e.target.value})} className="input-field" />
                   </div>
                   <div>
                     <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>ไฟฟ้า B ครั้งนี้</label>
-                    <input type="number" value={editInvoice.current_elec_b} onChange={e => setEditInvoice({...editInvoice, current_elec_b: e.target.value})} className="input-field" />
+                    <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={editInvoice.current_elec_b} onChange={e => setEditInvoice({...editInvoice, current_elec_b: e.target.value})} className="input-field" />
                   </div>
                 </div>
               )}
@@ -351,11 +351,11 @@ export default function BillingHistory() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
                   <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>ประปาครั้งก่อน</label>
-                  <input type="number" value={editInvoice.prev_water} onChange={e => setEditInvoice({...editInvoice, prev_water: e.target.value})} className="input-field" />
+                  <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={editInvoice.prev_water} onChange={e => setEditInvoice({...editInvoice, prev_water: e.target.value})} className="input-field" />
                 </div>
                 <div>
                   <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>ประปาครั้งนี้</label>
-                  <input type="number" value={editInvoice.current_water} onChange={e => setEditInvoice({...editInvoice, current_water: e.target.value})} className="input-field" />
+                  <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={editInvoice.current_water} onChange={e => setEditInvoice({...editInvoice, current_water: e.target.value})} className="input-field" />
                 </div>
               </div>
 

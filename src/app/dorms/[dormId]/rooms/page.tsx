@@ -296,7 +296,7 @@ export default function Rooms() {
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>รอบออกบิล (วันที่ของเดือน)</label>
-                    <input type="number" min="1" max="31" value={newRoom.billing_cycle_date} onChange={e => setNewRoom({...newRoom, billing_cycle_date: parseInt(e.target.value)})} className="input-field" placeholder="เช่น วันที่ 5" />
+                    <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} min="1" max="31" value={newRoom.billing_cycle_date} onChange={e => setNewRoom({...newRoom, billing_cycle_date: parseInt(e.target.value)})} className="input-field" placeholder="เช่น วันที่ 5" />
                   </div>
                 </div>
 
@@ -313,7 +313,7 @@ export default function Rooms() {
                     <label style={{ display: "block", fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>
                       {newRoom.room_type_category === 'monthly' ? 'ค่าเช่า (บาท/เดือน)' : newRoom.room_type_category === 'daily' ? 'ค่าเช่า (บาท/วัน)' : 'ค่าเช่า (แอดมินกรอกเอง)'}
                     </label>
-                    <input type="number" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} className="input-field" placeholder="ระบุจำนวนเงิน" disabled={newRoom.room_type_category === 'special'} required={newRoom.room_type_category !== 'special'} />
+                    <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: e.target.value})} className="input-field" placeholder="ระบุจำนวนเงิน" disabled={newRoom.room_type_category === 'special'} required={newRoom.room_type_category !== 'special'} />
                   </div>
                 </div>
 
@@ -341,7 +341,7 @@ export default function Rooms() {
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>ค่าส่วนกลาง (บาท/เดือน)</label>
-                    <input type="number" value={newRoom.common_fee} onChange={e => setNewRoom({...newRoom, common_fee: e.target.value})} className="input-field" placeholder="เช่น 200 (ใส่ 0 ถ้าไม่มี)" />
+                    <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={newRoom.common_fee} onChange={e => setNewRoom({...newRoom, common_fee: e.target.value})} className="input-field" placeholder="เช่น 200 (ใส่ 0 ถ้าไม่มี)" />
                   </div>
                 </div>
 
@@ -357,12 +357,12 @@ export default function Rooms() {
                     {newRoom.water_meter_type === 'min' ? (
                       <>
                         <label style={{ display: "block", fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>ค่าน้ำขั้นต่ำ (บาท/เดือน)</label>
-                        <input type="number" value={newRoom.water_min_price} onChange={e => setNewRoom({...newRoom, water_min_price: e.target.value})} className="input-field" placeholder="เช่น 100" />
+                        <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={newRoom.water_min_price} onChange={e => setNewRoom({...newRoom, water_min_price: e.target.value})} className="input-field" placeholder="เช่น 100" />
                       </>
                     ) : (
                       <>
                         <label style={{ display: "block", fontSize: "14px", color: "var(--text-secondary)", marginBottom: "4px" }}>ค่าน้ำเหมาจ่าย (บาท/เดือน)</label>
-                        <input type="number" value={newRoom.water_flat_price} onChange={e => setNewRoom({...newRoom, water_flat_price: e.target.value})} className="input-field" placeholder="เช่น 150" />
+                        <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} value={newRoom.water_flat_price} onChange={e => setNewRoom({...newRoom, water_flat_price: e.target.value})} className="input-field" placeholder="เช่น 150" />
                       </>
                     )}
                   </div>

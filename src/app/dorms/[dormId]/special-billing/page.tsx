@@ -177,11 +177,11 @@ export default function SpecialBilling() {
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>จำนวน</div>
-                      <input type="number" min="1" value={item.qty} onChange={(e) => updateItem(item.id, 'qty', parseInt(e.target.value))} className="input-field" />
+                      <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} min="1" value={item.qty} onChange={(e) => updateItem(item.id, 'qty', parseInt(e.target.value))} className="input-field" />
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>ราคา/หน่วย</div>
-                      <input type="number" min="0" value={item.price} onChange={(e) => updateItem(item.id, 'price', parseInt(e.target.value))} className="input-field" />
+                      <input type="number" onWheel={(e) => (e.target as HTMLElement).blur()} min="0" value={item.price} onChange={(e) => updateItem(item.id, 'price', parseInt(e.target.value))} className="input-field" />
                     </div>
                     <div style={{ flex: 2 }}>
                       <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>หมายเหตุ</div>
