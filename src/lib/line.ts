@@ -1,4 +1,4 @@
-export async function sendLineNotification(userId: string, message: string) {
+export async function sendLineBroadcast(message: string) {
   const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
   if (!channelAccessToken) {
@@ -7,14 +7,13 @@ export async function sendLineNotification(userId: string, message: string) {
   }
 
   try {
-    const response = await fetch("https://api.line.me/v2/bot/message/push", {
+    const response = await fetch("https://api.line.me/v2/bot/message/broadcast", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${channelAccessToken}`,
       },
       body: JSON.stringify({
-        to: userId,
         messages: [
           {
             type: "text",
@@ -33,7 +32,7 @@ export async function sendLineNotification(userId: string, message: string) {
     console.log("ส่งแจ้งเตือน LINE สำเร็จ:", message);
     return true;
   } catch (error) {
-    console.error("Failed to send LINE message:", error);
+    console.error("Error sending LINE broadcast:", error);
     return false;
   }
 }

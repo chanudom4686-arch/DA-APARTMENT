@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/utils/supabase';
-import { sendLineNotification } from '@/lib/line';
+import { sendLineBroadcast } from '@/lib/line';
 
 export async function GET(request: Request) {
   try {
@@ -67,16 +67,11 @@ export async function GET(request: Request) {
       }
     }
 
-    const userId = process.env.TEST_LINE_USER_ID;
-    if (!userId) {
-      return NextResponse.json({ error: 'TEST_LINE_USER_ID is not configured' }, { status: 500 });
-    }
-
     // If nothing to report
     if (totalUnpaid === 0 && totalUpcoming === 0) {
-      await sendLineNotification(userId, "รักดาดาครับ");
+      await sendLineBroadcast("รักดาดาครับ");
     } else {
-      await sendLineNotification(userId, message);
+      await sendLineBroadcast(message);
     }
 
     return NextResponse.json({ success: true, message: 'Cron job executed successfully' });
