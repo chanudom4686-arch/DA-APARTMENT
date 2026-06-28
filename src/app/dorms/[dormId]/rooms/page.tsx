@@ -11,6 +11,7 @@ export default function Rooms() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [sortBy, setSortBy] = useState<'id' | 'billing_cycle'>('id');
   
   // Modal State
   const [showModal, setShowModal] = useState(false);
@@ -187,6 +188,14 @@ export default function Rooms() {
     }
   };
 
+  const sortedRooms = [...rooms].sort((a, b) => {
+    if (sortBy === 'billing_cycle') {
+      const diff = (a.billing_cycle_date || 0) - (b.billing_cycle_date || 0);
+      if (diff !== 0) return diff;
+    }
+    return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
+  });
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
@@ -206,7 +215,20 @@ export default function Rooms() {
       )}
 
       <div className="card">
-        <p style={{ color: "var(--text-secondary)", marginBottom: "16px" }}>รายชื่อห้องพักทั้งหมด</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <p style={{ color: "var(--text-secondary)", margin: 0 }}>รายชื่อห้องพักทั้งหมด</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>เรียงตาม:</span>
+            <select 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value as any)}
+              style={{ padding: "4px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none", fontSize: "14px" }}
+            >
+              <option value="id">เลขห้อง (ค่าเริ่มต้น)</option>
+              <option value="billing_cycle">รอบบิล</option>
+            </select>
+          </div>
+        </div>
         
         {loading ? (
           <div style={{ textAlign: "center", padding: "40px", color: "var(--text-secondary)" }}>กำลังโหลดรายชื่อห้องพัก...</div>
@@ -229,7 +251,7 @@ export default function Rooms() {
                 </tr>
               </thead>
               <tbody>
-                {rooms.map((room: any) => (
+                {sortedRooms.map((room: any) => (
                   <tr key={room.id} style={{ borderBottom: "1px solid var(--border-light)" }}>
                     <td style={{ padding: "12px 8px", fontWeight: 500 }}>{room.id}</td>
                     <td style={{ padding: "12px 8px" }}>
