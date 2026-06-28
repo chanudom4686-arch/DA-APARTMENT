@@ -3,6 +3,16 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase";
 import { useParams } from "next/navigation";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 export default function Reports() {
   const params = useParams();
@@ -196,6 +206,21 @@ export default function Reports() {
   
   const utilProfitElec = stats.incomeElec - officialElecAmount;
   const utilProfitWater = stats.incomeWater - officialWaterAmount;
+
+  const utilityChartData = [
+    {
+      name: 'ไฟฟ้า (Electricity)',
+      'รายรับจากลูกบ้าน (บาท)': stats.incomeElec,
+      'รายจ่ายบิลทางการ (บาท)': officialElecAmount,
+    },
+    {
+      name: 'ประปา (Water)',
+      'รายรับจากลูกบ้าน (บาท)': stats.incomeWater,
+      'รายจ่ายบิลทางการ (บาท)': officialWaterAmount,
+    }
+  ];
+
+  const unpaidInvoices = invoices.filter(inv => !inv.is_paid);
 
   // Export to CSV (Excel compatible)
   const exportToExcel = () => {
@@ -435,6 +460,23 @@ export default function Reports() {
                 </div>
               </div>
             </div>
+
+            <div className="no-print" style={{ height: "300px", marginTop: "32px", marginBottom: "16px" }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={utilityChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-light)" />
+                  <XAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 14 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 13 }} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    cursor={{ fill: 'var(--bg-main)' }}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                  <Bar dataKey="รายรับจากลูกบ้าน (บาท)" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                  <Bar dataKey="รายจ่ายบิลทางการ (บาท)" fill="var(--danger)" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
@@ -529,6 +571,41 @@ export default function Reports() {
                 </table>
               )}
             </div>
+          </div>
+
+          {/* รายชื่อห้องค้างชำระ */}
+          <div className="card" style={{ marginTop: "24px", borderTop: "4px solid var(--danger)" }}>
+            <h3 style={{ fontSize: "16px", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid var(--border-light)", color: "var(--danger)" }}>
+              🔴 สรุปห้องที่ค้างชำระ ({unpaidInvoices.length} ห้อง)
+            </h3>
+            {unpaidInvoices.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)", fontSize: "14px" }}>
+                ไม่มีห้องค้างชำระในช่วงเวลานี้ 🎉
+              </div>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ backgroundColor: "var(--bg-main)", color: "var(--text-secondary)", borderBottom: "1px solid var(--border-color)" }}>
+                      <th style={{ padding: "10px" }}>วันที่</th>
+                      <th style={{ padding: "10px" }}>เลขที่บิล</th>
+                      <th style={{ padding: "10px" }}>ห้อง</th>
+                      <th style={{ padding: "10px", textAlign: "right" }}>ยอดรวมที่ต้องชำระ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {unpaidInvoices.map((inv) => (
+                      <tr key={inv.id} style={{ borderBottom: "1px solid var(--border-light)" }}>
+                        <td style={{ padding: "10px" }}>{inv.issue_date ? new Date(inv.issue_date).toLocaleDateString('th-TH') : '-'}</td>
+                        <td style={{ padding: "10px", fontWeight: 500 }}>{inv.invoice_no || '-'}</td>
+                        <td style={{ padding: "10px", fontWeight: 600 }}>{inv.room_id}</td>
+                        <td style={{ padding: "10px", textAlign: "right", fontWeight: 600, color: "var(--danger)" }}>{Number(inv.grand_total || 0).toLocaleString()} ฿</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* รายละเอียดแต่ละบิล */}
