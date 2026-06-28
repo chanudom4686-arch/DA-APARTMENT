@@ -242,7 +242,13 @@ export default function BillingHistory() {
                     return (
                       <tr key={inv.id} style={{ borderBottom: "1px solid var(--border-light)" }}>
                         <td style={{ padding: "16px" }}>{inv.issue_date ? new Date(inv.issue_date).toLocaleDateString('th-TH') : '-'}</td>
-                        <td style={{ padding: "16px", fontWeight: 500 }}>{inv.invoice_no || 'ยังไม่มีเลขที่บิล'}</td>
+                        <td style={{ padding: "16px" }}>
+                          {inv.invoice_no ? (
+                            <span className="badge badge-primary" style={{ fontSize: "13px", padding: "6px 12px" }}>{inv.invoice_no}</span>
+                          ) : (
+                            <span style={{ color: "var(--text-muted)" }}>-</span>
+                          )}
+                        </td>
                         <td style={{ padding: "16px" }}>
                           <span style={{ fontWeight: 600 }}>{inv.room_id}</span>
                           <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>{room?.tenant_name || '-'}</div>
@@ -340,8 +346,8 @@ export default function BillingHistory() {
               </div>
 
               <div style={{ display: "flex", gap: "12px", marginTop: "16px", justifyContent: "flex-end" }}>
-                <button type="button" onClick={() => setEditInvoice(null)} className="btn-primary" style={{ background: "white", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}>ยกเลิก</button>
-                <button type="submit" disabled={saving} className="btn-primary" style={{ backgroundColor: "var(--primary)", color: "white" }}>{saving ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}</button>
+                <button type="button" onClick={() => setEditInvoice(null)} className="btn btn-outline">ยกเลิก</button>
+                <button type="submit" disabled={saving} className="btn btn-primary">{saving ? "กำลังบันทึก..." : "💾 บันทึกการแก้ไข"}</button>
               </div>
             </form>
           </div>
