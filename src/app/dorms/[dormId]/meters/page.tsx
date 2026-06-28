@@ -80,6 +80,10 @@ export default function MeterRecording() {
       const prevMap: any = {};
       if (prevInvoices) {
         for (const inv of prevInvoices) {
+          // ถ้าเลขมิเตอร์ในบิลนั้นเป็น 0 หมด (ทั้งที่ห้องใช้มิเตอร์) ให้ข้ามบิลนั้นไปหาบิลที่เก่ากว่าที่มีเลขจริง
+          if (inv.current_elec === 0 && inv.prev_elec === 0 && inv.current_water === 0 && inv.prev_water === 0) {
+            continue;
+          }
           if (!prevMap[inv.room_id]) {
             prevMap[inv.room_id] = { e: inv.current_elec, w: inv.current_water, eb: inv.current_elec_b };
           }
@@ -138,6 +142,21 @@ export default function MeterRecording() {
       return;
     }
 
+    const roomsToProcess = rooms.filter(room => {
+      const inv = invoices[room.id];
+      if (!inv) return false;
+      // ถ้าไม่ได้เลือกทุกห้อง ให้กรองเฉพาะห้องที่เลือก
+      if (selectedRoomId !== "all" && room.id !== selectedRoomId) return false;
+      // กรองเฉพาะห้องที่มีการกรอกตัวเลขแล้วเท่านั้น
+      return (inv.currentElec !== "" || inv.currentWater !== "");
+    });
+
+    if (roomsToProcess.length === 0) {
+      alert("กรุณากรอกตัวเลขมิเตอร์อย่างน้อย 1 ช่อง (หรือถ้าเป็นแบบเหมาจ่ายกรุณาใส่เลขอะไรก็ได้)");
+      setSaving(false);
+      return;
+    }
+
     try {
       // Generate invoice numbers
       const year = issueDate ? issueDate.split('-')[0] : new Date().getFullYear().toString();
@@ -160,7 +179,7 @@ export default function MeterRecording() {
       const inserts: any[] = [];
       const updates: any[] = [];
       
-      rooms.forEach((room) => {
+      roomsToProcess.forEach((room) => {
         const inv = invoices[room.id];
         
         // Calculate grand total automatically
