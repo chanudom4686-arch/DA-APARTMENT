@@ -53,8 +53,8 @@ export default function BillingHistory() {
           .from('invoices')
           .select('*')
           .in('room_id', roomIdsToFetch)
-          .order('issue_date', { ascending: false })
-          .order('invoice_no', { ascending: false }); // order desc to see latest
+          .order('issue_date', { ascending: true })
+          .order('invoice_no', { ascending: true });
           
         if (billingMonth) query = query.eq('billing_month', billingMonth);
         if (filterIssueDate) query = query.eq('issue_date', filterIssueDate);
