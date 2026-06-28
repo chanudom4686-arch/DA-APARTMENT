@@ -9,6 +9,16 @@ export default function Dashboard() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [fromDate, setFromDate] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+  });
+  
+  const [toDate, setToDate] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
+  });
+
   const [reports, setReports] = useState({ 
     totalBilledRooms: 0, 
     totalBilledAmount: 0,
@@ -20,7 +30,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
-  }, [dormId]);
+  }, [dormId, fromDate, toDate]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -29,9 +39,6 @@ export default function Dashboard() {
       if (roomsData) setRooms(roomsData);
 
       const d = new Date();
-      const currentMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
-      const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
       
       let totalBilledAmt = 0;
       let totalCollectedAmt = 0;
@@ -40,10 +47,14 @@ export default function Dashboard() {
       let totalExp = 0;
 
       if (roomsData && roomsData.length > 0) {
-        const { data: invoicesData } = await supabase.from('invoices')
+        let invoicesQuery = supabase.from('invoices')
           .select('grand_total, room_id, is_paid, invoice_no, issue_date')
-          .eq('billing_month', currentMonth)
           .in('room_id', roomsData.map(r => r.id));
+          
+        if (fromDate) invoicesQuery = invoicesQuery.gte('issue_date', fromDate);
+        if (toDate) invoicesQuery = invoicesQuery.lte('issue_date', toDate);
+          
+        const { data: invoicesData } = await invoicesQuery;
           
         if (invoicesData) {
           billedRoomsCount = invoicesData.length;
@@ -59,11 +70,14 @@ export default function Dashboard() {
         }
       }
 
-      const { data: expensesData } = await supabase.from('expenses')
+      let expensesQuery = supabase.from('expenses')
         .select('amount')
-        .eq('dorm_id', dormId)
-        .gte('expense_date', firstDay)
-        .lte('expense_date', lastDay);
+        .eq('dorm_id', dormId);
+        
+      if (fromDate) expensesQuery = expensesQuery.gte('expense_date', fromDate);
+      if (toDate) expensesQuery = expensesQuery.lte('expense_date', toDate);
+
+      const { data: expensesData } = await expensesQuery;
 
       if (expensesData) {
         totalExp = expensesData.reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
@@ -98,7 +112,35 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="page-title">แดชบอร์ดสรุป (Dashboard) - ประจำเดือนนี้</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
+        <div>
+          <h1 className="page-title" style={{ margin: 0 }}>แดชบอร์ดสรุป (Dashboard)</h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px" }}>
+            ข้อมูลตั้งแต่วันที่ {new Date(fromDate).toLocaleDateString('th-TH')} ถึง {new Date(toDate).toLocaleDateString('th-TH')}
+          </p>
+        </div>
+        
+        <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>วันที่เริ่มต้น</label>
+            <input 
+              type="date" 
+              value={fromDate} 
+              onChange={e => setFromDate(e.target.value)} 
+              style={{ padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none" }} 
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>วันที่สิ้นสุด</label>
+            <input 
+              type="date" 
+              value={toDate} 
+              onChange={e => setToDate(e.target.value)} 
+              style={{ padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none" }} 
+            />
+          </div>
+        </div>
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "16px", marginBottom: "24px" }}>
         <div className="card" style={{ borderLeft: "4px solid var(--primary)" }}>
