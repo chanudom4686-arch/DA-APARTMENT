@@ -62,7 +62,9 @@ export default function Reports() {
           .select('*')
           .in('room_id', roomIds)
           .gte('issue_date', fromDate)
-          .lte('issue_date', toDate);
+          .lte('issue_date', toDate)
+          .order('issue_date', { ascending: true })
+          .order('invoice_no', { ascending: true });
         setInvoices(invs || []);
       } else {
         setInvoices([]);
