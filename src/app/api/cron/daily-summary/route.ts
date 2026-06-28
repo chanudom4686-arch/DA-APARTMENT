@@ -69,7 +69,7 @@ export async function GET(request: Request) {
 
     // If nothing to report
     if (totalUnpaid === 0 && totalUpcoming === 0) {
-      await sendLineBroadcast("รักดาดาครับ");
+      await sendLineBroadcast("ว่าง ไปเติมเกย์ได้ละ : จดหอให้สุดสวย");
     } else {
       await sendLineBroadcast(message);
     }
