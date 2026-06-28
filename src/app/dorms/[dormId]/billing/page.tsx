@@ -130,6 +130,7 @@ export default function BillingHistory() {
         prev_water: Number(editInvoice.prev_water) || 0,
         current_water: Number(editInvoice.current_water) || 0,
         issue_date: editInvoice.issue_date || null,
+        invoice_no: editInvoice.invoice_no || null,
         grand_total: calc.grandTotal + Number(editInvoice.other_total || 0),
         room_price: room.room_type_category === 'special' ? 0 : (Number(room.price) || 0),
         elec_total: calc.elecTotalA + (calc.elecTotalB || 0),
@@ -296,6 +297,10 @@ export default function BillingHistory() {
                 <div>
                   <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>วันที่ออกบิล</label>
                   <input type="date" value={editInvoice.issue_date || ""} onChange={e => setEditInvoice({...editInvoice, issue_date: e.target.value})} className="input-field" />
+                </div>
+                <div>
+                  <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>เลขที่บิล (Invoice No.)</label>
+                  <input type="text" value={editInvoice.invoice_no || ""} onChange={e => setEditInvoice({...editInvoice, invoice_no: e.target.value})} className="input-field" placeholder="เว้นว่างถ้ายังไม่ระบุ" />
                 </div>
               </div>
 
