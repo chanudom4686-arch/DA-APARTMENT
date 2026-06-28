@@ -287,7 +287,7 @@ export default function Dormitories() {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {alerts.map((alert, idx) => (
-                    <div key={`alert-${idx}`} style={{ backgroundColor: "var(--warning-bg)", padding: "12px", borderRadius: "var(--radius-sm)", border: "1px solid #f5c2c7", fontSize: "14px" }}>
+                    <div key={`alert-${idx}`} style={{ backgroundColor: "var(--warning-bg)", padding: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--warning)", fontSize: "14px" }}>
                       <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>ห้อง {alert.roomId}</div>
                       <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "4px" }}>หอพัก: {alert.dormName}</div>
                       <div style={{ marginTop: "8px", color: alert.daysLeft === 0 ? "var(--danger)" : "var(--warning)", fontWeight: 500 }}>
