@@ -122,6 +122,19 @@ export default function BillingHistory() {
         config: config
       });
 
+      if (editInvoice.invoice_no) {
+        const { data: duplicateCheck } = await supabase
+          .from('invoices')
+          .select('id')
+          .eq('invoice_no', editInvoice.invoice_no)
+          .neq('id', editInvoice.id)
+          .limit(1);
+
+        if (duplicateCheck && duplicateCheck.length > 0) {
+          throw new Error("เลขที่บิลนี้มีซ้ำอยู่ในระบบแล้ว กรุณาใช้เลขอื่น");
+        }
+      }
+
       const updateData = {
         prev_elec: Number(editInvoice.prev_elec) || 0,
         current_elec: Number(editInvoice.current_elec) || 0,
