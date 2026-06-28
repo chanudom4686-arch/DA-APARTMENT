@@ -10,6 +10,8 @@ export default function BillingHistory() {
   const dormId = params.dormId as string;
 
   const [billingMonth, setBillingMonth] = useState("");
+  const [filterIssueDate, setFilterIssueDate] = useState("");
+  const [filterRoomId, setFilterRoomId] = useState("all");
   const [invoices, setInvoices] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
   const [dorm, setDorm] = useState<any>(null);
@@ -28,9 +30,9 @@ export default function BillingHistory() {
   }, []);
 
   useEffect(() => {
-    if (!billingMonth || !dormId) return;
+    if (!dormId) return;
     fetchData();
-  }, [billingMonth, dormId]);
+  }, [billingMonth, filterIssueDate, filterRoomId, dormId]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -42,14 +44,23 @@ export default function BillingHistory() {
       if (dbRooms) setRooms(dbRooms);
 
       if (dbRooms && dbRooms.length > 0) {
-        const roomIds = dbRooms.map(r => r.id);
-        const { data: dbInvoices } = await supabase
+        let roomIdsToFetch = dbRooms.map(r => r.id);
+        if (filterRoomId !== "all") {
+          roomIdsToFetch = [filterRoomId];
+        }
+
+        let query = supabase
           .from('invoices')
           .select('*')
-          .eq('billing_month', billingMonth)
-          .in('room_id', roomIds)
-          .order('invoice_no', { ascending: true });
+          .in('room_id', roomIdsToFetch)
+          .order('invoice_no', { ascending: false }); // order desc to see latest
           
+        if (billingMonth) query = query.eq('billing_month', billingMonth);
+        if (filterIssueDate) query = query.eq('issue_date', filterIssueDate);
+
+        query = query.limit(200);
+
+        const { data: dbInvoices } = await query;
         if (dbInvoices) setInvoices(dbInvoices);
       }
     } catch (err) {
@@ -118,6 +129,7 @@ export default function BillingHistory() {
         current_elec_b: Number(editInvoice.current_elec_b) || 0,
         prev_water: Number(editInvoice.prev_water) || 0,
         current_water: Number(editInvoice.current_water) || 0,
+        issue_date: editInvoice.issue_date || null,
         grand_total: calc.grandTotal + Number(editInvoice.other_total || 0),
         room_price: room.room_type_category === 'special' ? 0 : (Number(room.price) || 0),
         elec_total: calc.elecTotalA + (calc.elecTotalB || 0),
@@ -169,15 +181,37 @@ export default function BillingHistory() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "24px" }}>
           <div>
             <h1 className="page-title" style={{ marginBottom: "16px" }}>ประวัติบิลและการจัดการ (Billing History)</h1>
-            <div style={{ display: "flex", gap: "16px" }}>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
               <div>
-                <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>เลือกรอบบิล</div>
+                <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>รอบบิล (เดือน/ปี)</div>
                 <input 
                   type="month" 
                   value={billingMonth} 
                   onChange={(e) => setBillingMonth(e.target.value)}
-                  style={{ padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none", fontFamily: "inherit" }}
+                  style={{ padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none", fontFamily: "inherit", width: "150px" }}
                 />
+              </div>
+              <div>
+                <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>วันที่ออกบิล</div>
+                <input 
+                  type="date" 
+                  value={filterIssueDate} 
+                  onChange={(e) => setFilterIssueDate(e.target.value)}
+                  style={{ padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none", fontFamily: "inherit", width: "150px" }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>ห้องพัก</div>
+                <select 
+                  value={filterRoomId} 
+                  onChange={(e) => setFilterRoomId(e.target.value)}
+                  style={{ padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none", fontFamily: "inherit", width: "150px", backgroundColor: "white" }}
+                >
+                  <option value="all">-- ทุกห้อง --</option>
+                  {rooms.map(r => (
+                    <option key={r.id} value={r.id}>ห้อง {r.id}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -258,6 +292,13 @@ export default function BillingHistory() {
           <div className="card" style={{ width: "500px", padding: "24px", margin: "auto" }}>
             <h2 style={{ fontSize: "18px", marginBottom: "20px" }}>แก้ไขมิเตอร์ห้อง {editInvoice.room_id}</h2>
             <form onSubmit={handleEditSave} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div>
+                  <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>วันที่ออกบิล</label>
+                  <input type="date" value={editInvoice.issue_date || ""} onChange={e => setEditInvoice({...editInvoice, issue_date: e.target.value})} className="input-field" />
+                </div>
+              </div>
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
                   <label style={{ fontSize: "14px", color: "var(--text-secondary)" }}>ไฟฟ้าครั้งก่อน</label>

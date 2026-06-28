@@ -11,6 +11,7 @@ export default function MeterRecording() {
   const [billingMonth, setBillingMonth] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [rooms, setRooms] = useState<any[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState("all");
   const [invoices, setInvoices] = useState<any>({});
   const [config, setConfig] = useState<MeterConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,26 +66,25 @@ export default function MeterRecording() {
         .select('*')
         .eq('billing_month', monthStr);
       
-      // Calculate PREVIOUS month (e.g. 2026-06 -> 2026-05)
-      const [y, m] = monthStr.split('-');
-      let py = parseInt(y);
-      let pm = parseInt(m) - 1;
-      if (pm === 0) { py -= 1; pm = 12; }
-      const prevMonthStr = `${py}-${String(pm).padStart(2, '0')}`;
-
-      // 4. Fetch Invoices for PREV month (to get prev meters)
+      // 4. Fetch previous Invoices (latest before current month) to get prev meters
       const { data: prevInvoices } = await supabase
         .from('invoices')
         .select('*')
-        .eq('billing_month', prevMonthStr);
+        .in('room_id', loadedRooms.map(r => r.id))
+        .lt('billing_month', monthStr)
+        .order('billing_month', { ascending: false });
 
       const invoiceState: any = {};
       
       // Map previous month's current to this month's prev
       const prevMap: any = {};
-      prevInvoices?.forEach(inv => {
-        prevMap[inv.room_id] = { e: inv.current_elec, w: inv.current_water, eb: inv.current_elec_b };
-      });
+      if (prevInvoices) {
+        for (const inv of prevInvoices) {
+          if (!prevMap[inv.room_id]) {
+            prevMap[inv.room_id] = { e: inv.current_elec, w: inv.current_water, eb: inv.current_elec_b };
+          }
+        }
+      }
 
       // Populate form state
       loadedRooms.forEach(room => {
@@ -260,6 +260,19 @@ export default function MeterRecording() {
               style={{ padding: "6px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none", fontFamily: "inherit" }}
             />
           </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", color: "var(--text-secondary)", fontSize: "14px", marginTop: "12px" }}>
+            <span>เลือกห้องพัก: </span>
+            <select 
+              value={selectedRoomId} 
+              onChange={(e) => setSelectedRoomId(e.target.value)}
+              style={{ padding: "6px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", outline: "none", fontFamily: "inherit" }}
+            >
+              <option value="all">-- ทุกห้อง --</option>
+              {rooms.map(r => (
+                <option key={r.id} value={r.id}>ห้อง {r.id}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           {saveSuccess && <span style={{ color: "var(--success)", fontWeight: 500 }}>✅ บันทึกสำเร็จ!</span>}
@@ -289,7 +302,7 @@ export default function MeterRecording() {
               </tr>
             </thead>
             <tbody>
-              {rooms.map((room) => {
+              {rooms.filter(room => selectedRoomId === "all" || room.id === selectedRoomId).map((room) => {
                 const inv = invoices[room.id] || {};
                 const elecError = inv.currentElec !== "" && Number(inv.currentElec) < Number(inv.prevElec);
                 const waterError = inv.currentWater !== "" && Number(inv.currentWater) < Number(inv.prevWater);
