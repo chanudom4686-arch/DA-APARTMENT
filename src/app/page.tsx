@@ -7,6 +7,7 @@ import Link from "next/link";
 export default function Dormitories() {
   const [dorms, setDorms] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [unpaidInvoices, setUnpaidInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -65,6 +66,23 @@ export default function Dormitories() {
       // Sort alerts by days left
       newAlerts.sort((a, b) => a.daysLeft - b.daysLeft);
       setAlerts(newAlerts);
+
+      // Fetch unpaid invoices
+      const { data: dbInvoices, error: invError } = await supabase.from('invoices').select('room_id, grand_total, is_paid').eq('is_paid', false);
+      if (invError) throw invError;
+      
+      const unpaid: any[] = [];
+      (dbInvoices || []).forEach(inv => {
+        const room = (dbRooms || []).find(r => r.id === inv.room_id);
+        const dorm = dbDorms?.find(d => d.id === room?.dorm_id);
+        unpaid.push({
+           roomId: inv.room_id,
+           dormName: dorm ? dorm.name : 'ไม่ระบุหอพัก',
+           amount: inv.grand_total
+        });
+      });
+      setUnpaidInvoices(unpaid);
+
       setErrorMsg("");
     } catch (err: any) {
       console.error(err);
@@ -237,30 +255,53 @@ export default function Dormitories() {
 
         {/* Right Side: Alerts */}
         <div>
-          <div className="card" style={{ backgroundColor: "var(--danger-light)", borderColor: "var(--danger)", padding: "20px" }}>
-            <h3 style={{ fontSize: "16px", color: "var(--danger)", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>🔔</span> การแจ้งเตือน (บิลใกล้ถึงกำหนด)
+          <div className="card" style={{ padding: "20px" }}>
+            <h3 style={{ fontSize: "16px", color: "var(--text-primary)", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>📊</span> สรุปข้อมูลการแจ้งเตือน
             </h3>
             
-            {alerts.length === 0 ? (
-              <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>ไม่มีห้องที่ใกล้กำหนดออกบิล (ล่วงหน้า 3 วัน)</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {alerts.map((alert, idx) => (
-                  <div key={idx} style={{ backgroundColor: "white", padding: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "14px" }}>
-                    <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>ห้อง {alert.roomId}</div>
-                    <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "4px" }}>หอพัก: {alert.dormName}</div>
-                    <div style={{ marginTop: "8px", color: alert.daysLeft === 0 ? "var(--danger)" : "var(--warning)", fontWeight: 500 }}>
-                      {alert.daysLeft === 0 ? "ถึงรอบออกบิลวันนี้ (วันที่ " + alert.cycleDate + ")" : `อีก ${alert.daysLeft} วัน ถึงรอบออกบิล (วันที่ ${alert.cycleDate})`}
+            <div style={{ marginBottom: "20px" }}>
+              <h4 style={{ fontSize: "14px", color: "var(--danger)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                🔴 ห้องที่ค้างชำระ ({unpaidInvoices.length} ห้อง)
+              </h4>
+              {unpaidInvoices.length === 0 ? (
+                <p style={{ fontSize: "14px", color: "var(--text-secondary)", fontStyle: "italic" }}>ไม่มีห้องค้างชำระ</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {unpaidInvoices.map((inv, idx) => (
+                    <div key={`unpaid-${idx}`} style={{ backgroundColor: "var(--danger-light)", padding: "12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--danger)", fontSize: "14px" }}>
+                      <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>ห้อง {inv.roomId} <span style={{ float: "right", color: "var(--danger)" }}>{Number(inv.amount).toLocaleString()} บาท</span></div>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "4px" }}>หอพัก: {inv.dormName}</div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h4 style={{ fontSize: "14px", color: "var(--warning)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                ⚠️ บิลใกล้ถึงกำหนด ({alerts.length} ห้อง)
+              </h4>
+              {alerts.length === 0 ? (
+                <p style={{ fontSize: "14px", color: "var(--text-secondary)", fontStyle: "italic" }}>ไม่มีห้องที่ใกล้กำหนดออกบิล (ล่วงหน้า 3 วัน)</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {alerts.map((alert, idx) => (
+                    <div key={`alert-${idx}`} style={{ backgroundColor: "var(--warning-bg)", padding: "12px", borderRadius: "var(--radius-sm)", border: "1px solid #f5c2c7", fontSize: "14px" }}>
+                      <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>ห้อง {alert.roomId}</div>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "4px" }}>หอพัก: {alert.dormName}</div>
+                      <div style={{ marginTop: "8px", color: alert.daysLeft === 0 ? "var(--danger)" : "var(--warning)", fontWeight: 500 }}>
+                        {alert.daysLeft === 0 ? "ถึงรอบออกบิลวันนี้ (วันที่ " + alert.cycleDate + ")" : `อีก ${alert.daysLeft} วัน ถึงรอบออกบิล (วันที่ ${alert.cycleDate})`}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             
-            <div style={{ marginTop: "24px" }}>
+            <div style={{ marginTop: "24px", paddingTop: "16px", borderTop: "1px solid var(--border-light)" }}>
                <Link href="/rooms" style={{ display: "block", textAlign: "center", color: "var(--primary)", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}>
-                 ไปหน้าจัดการห้องพัก →
+                 ไปหน้าจัดการห้องพักทั้งหมด →
                </Link>
             </div>
           </div>

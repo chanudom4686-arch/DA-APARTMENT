@@ -8,6 +8,7 @@ export default function Dashboard() {
   const dormId = params.dormId as string;
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
 
   const [fromDate, setFromDate] = useState(() => {
     const d = new Date();
@@ -110,11 +111,82 @@ export default function Dashboard() {
     return diff <= 3 && diff >= 0;
   });
 
+  const sendLineSummary = async () => {
+    if (reports.unpaidInvoices.length === 0 && upcomingBillingRooms.length === 0) {
+      alert("ไม่มีข้อมูลที่จะส่งแจ้งเตือนครับ");
+      return;
+    }
+    
+    setIsSending(true);
+    try {
+      let message = `📊 สรุปข้อมูลประจำวันหอพัก\n\n`;
+      
+      message += `🔴 ห้องที่ค้างชำระ (${reports.unpaidInvoices.length} ห้อง):\n`;
+      if (reports.unpaidInvoices.length > 0) {
+        reports.unpaidInvoices.forEach(inv => {
+          message += `- ห้อง ${inv.room_id}: ${Number(inv.grand_total).toLocaleString()} บาท\n`;
+        });
+      } else {
+        message += `- ไม่มีห้องค้างชำระ\n`;
+      }
+
+      message += `\n⚠️ ห้องที่ใกล้ถึงรอบบิลใน 3 วัน (${upcomingBillingRooms.length} ห้อง):\n`;
+      if (upcomingBillingRooms.length > 0) {
+        upcomingBillingRooms.forEach(room => {
+          message += `- ห้อง ${room.id} (รอบวันที่ ${room.billing_cycle_date})\n`;
+        });
+      } else {
+        message += `- ไม่มีห้องที่ใกล้ถึงรอบบิล\n`;
+      }
+
+      message += `\nเช็คข้อมูลเพิ่มเติมได้ที่ระบบจัดการหอพัก`;
+
+      const res = await fetch('/api/notify-line', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('ส่งสรุปข้อมูลเข้า LINE สำเร็จ!');
+      } else {
+        alert('เกิดข้อผิดพลาด: ' + data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('ไม่สามารถส่งข้อมูลเข้า LINE ได้');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h1 className="page-title" style={{ margin: 0 }}>แดชบอร์ดสรุป (Dashboard)</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <h1 className="page-title" style={{ margin: 0 }}>แดชบอร์ดสรุป (Dashboard)</h1>
+            <button 
+              onClick={sendLineSummary}
+              disabled={isSending}
+              style={{
+                backgroundColor: isSending ? "#ccc" : "#06C755", // LINE Green color
+                color: "white",
+                border: "none",
+                borderRadius: "var(--radius-sm)",
+                padding: "6px 12px",
+                fontSize: "14px",
+                cursor: isSending ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontWeight: 500
+              }}
+            >
+              {isSending ? "กำลังส่ง..." : "📱 ส่งสรุปเข้า LINE"}
+            </button>
+          </div>
           <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "4px" }}>
             ข้อมูลตั้งแต่วันที่ {new Date(fromDate).toLocaleDateString('th-TH')} ถึง {new Date(toDate).toLocaleDateString('th-TH')}
           </p>
